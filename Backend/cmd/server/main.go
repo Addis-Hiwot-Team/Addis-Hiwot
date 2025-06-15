@@ -26,5 +26,5 @@ func main() {
 	http.SetupRoutes(router, cfg)
 
 	log.Println("Server running at", cfg.ServerPort)
-	router.Run(cfg.ServerPort)
+	router.Run(":" + cfg.ServerPort)
 }
