@@ -1,0 +1,23 @@
+# Binaries
+/app
+*.exe
+*.out
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+
+# Env files
+.env
+
+# Dependency cache
+vendor/
+go.sum
+
+# Logs and temporary files
+*.log
+*.tmp

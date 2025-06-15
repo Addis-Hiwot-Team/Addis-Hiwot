@@ -1,0 +1,17 @@
+# Ignore the Git folder
+.git
+.gitignore
+
+# Ignore editor configs
+.vscode
+.idea
+
+# Ignore logs and binaries
+*.log
+*.tmp
+*.exe
+*.out
+/app
+
+# Ignore environment files (you'll pass them explicitly with Docker)
+.env
