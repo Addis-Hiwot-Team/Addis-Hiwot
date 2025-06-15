@@ -43,6 +43,17 @@ func NewDB(cfg *Config) *DB {
 func (db *DB) Migrate() {
 	if err := db.Db.AutoMigrate(
 		&models.User{},
+		&models.AIChatHistory{},
+		&models.CommunityMessage{},
+		&models.DailyCheckIn{},
+		&models.GoalReward{},
+		&models.Goal{},
+		&models.HabitLog{},
+		&models.Habit{},
+		&models.MotivationalQuote{},
+		&models.Resource{},
+		&models.UserQuote{},
+		&models.UserResource{},
 	); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}

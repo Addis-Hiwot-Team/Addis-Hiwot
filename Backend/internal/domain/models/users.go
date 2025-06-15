@@ -15,6 +15,17 @@ type User struct {
 	Role         string    `gorm:"type:varchar(255)" json:"role"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+
+	//relations
+	DailyCheckIns     []*DailyCheckIn     `gorm:"constraint:OnDelete:CASCADE"`
+	Goals             []*Goal             `gorm:"constraint:OnDelete:CASCADE"`
+	GoalRewards       []*GoalReward       `gorm:"constraint:OnDelete:CASCADE"`
+	AIChatHistories   []*AIChatHistory    `gorm:"constraint:OnDelete:CASCADE"`
+	CommunityMessages []*CommunityMessage `gorm:"constraint:OnDelete:CASCADE"`
+	UserResources     []*UserResource     `gorm:"constraint:OnDelete:CASCADE"`
+	Habits            []*Habit            `gorm:"constraint:OnDelete:CASCADE"`
+	HabitLogs         []*HabitLog         `gorm:"constraint:OnDelete:CASCADE"`
+	UserQuotes        []*UserQuote        `gorm:"constraint:OnDelete:CASCADE"`
 }
 
 type UserResponse struct {
