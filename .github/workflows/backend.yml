@@ -1,6 +1,3 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
 name: Go
 
 on:
@@ -20,7 +17,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.20"
+          go-version: "1.23.10"
 
       - name: Build
         working-directory: ./Backend
@@ -30,7 +27,6 @@ jobs:
         working-directory: ./Backend
         run: go test -v ./...
 
-      # Caching for Go modules to speed up builds
       - name: Cache Go modules
         uses: actions/cache@v3
         with:
@@ -39,7 +35,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # Step to verify Docker build
       - name: Build Docker image
         working-directory: ./Backend
         run: docker build -t addis-hiwot:latest .
