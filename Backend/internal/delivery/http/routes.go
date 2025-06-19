@@ -2,24 +2,17 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 
 	"addis-hiwot/internal/config"
 	"addis-hiwot/internal/delivery/http/handlers"
-	"addis-hiwot/internal/domain/models"
 	"addis-hiwot/internal/repository"
 	"addis-hiwot/internal/usecases"
 )
 
 func SetupRoutes(r *gin.Engine, cfg *config.Config) {
-	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect to database")
-	}
-
-	// Auto-migrate your models
-	db.AutoMigrate(&models.User{})
+	gormDB := config.NewDB(cfg)
+	gormDB.Migrate() // migrated before setting up routes
+	db := gormDB.Db
 
 	userRepo := repository.NewUserRepository(db)
 	userUC := usecases.NewUserUsecase(userRepo)

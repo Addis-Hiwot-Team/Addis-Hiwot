@@ -21,27 +21,28 @@ func NewUserUsecase(repo interfaces.UserRepository) *UserUsecase {
 	}
 }
 
-func (uc *UserUsecase) Create(user *models.User) error {
+func (uc *UserUsecase) Create(user *models.User) (*models.UserResponse, error) {
 	// Validate struct fields using tags in the model
 	if err := uc.validate.Struct(user); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Hash the password before saving
 	if user.PasswordHash == "" {
-		return errors.New("password cannot be empty")
+		return nil, errors.New("password cannot be empty")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	user.PasswordHash = string(hashedPassword)
 
 	// Call repository to save user
-	return uc.repo.Create(user)
+	createdUser, err := uc.repo.Create(user)
+	return createdUser.ToResponse(), err
 }
 
-func (uc *UserUsecase) GetAll() ([]models.UserResponse, error) {
+func (uc *UserUsecase) GetAll() ([]*models.UserResponse, error) {
 	return uc.repo.GetAll()
 }
