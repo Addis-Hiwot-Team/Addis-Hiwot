@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"addis-hiwot/internal/domain/models"
+	"addis-hiwot/internal/domain/schema"
 	"addis-hiwot/internal/usecases"
 )
 
@@ -18,13 +18,14 @@ func NewUserHandler(uc *usecases.UserUsecase) *UserHandler {
 }
 
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var userCreateSchema schema.CreateUser
+	if err := c.ShouldBindJSON(&userCreateSchema); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.uc.Create(&user); err != nil {
+	user, err := h.uc.Create(userCreateSchema.DBUser())
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -37,6 +37,11 @@ dependencies:
   flutter_bloc: ^9.1.1
   equatable: ^2.0.7
   google_fonts: ^6.2.1
+  flutter_secure_storage: ^9.0.0
+  http: ^1.2.1
+  shared_preferences: ^2.2.2
+  connectivity_plus: ^5.0.2
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:
