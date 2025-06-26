@@ -1,7 +1,5 @@
-import 'dart:ffi';
-
 class UserEntity {
-  final Uint32 userId;
+  final int userId;
   final String username;
   final String email;
   final String profileImage;

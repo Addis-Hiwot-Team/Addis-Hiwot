@@ -1,9 +1,8 @@
-import 'dart:ffi';
 
 import 'package:mobile/features/auth/domain/entity/user_entity.dart';
 
 class UserModel {
-  final Uint32 userId;
+  final int userId;
   final String username;
   final String email;
   final String profileImage;

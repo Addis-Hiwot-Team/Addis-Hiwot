@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:http/http.dart' as http;
 import 'package:mobile/core/constants/api_urls.dart';
 import 'package:mobile/core/errors/exceptions.dart';
@@ -13,7 +12,7 @@ abstract class AuthRemoteDatasource {
   );
   Future<(String, UserModel)> login(String identifier, String password);
   Future<void> logout();
-  Future<UserModel> getme(Uint32 id, String token);
+  Future<UserModel> getme(int id, String token);
 }
 
 class AuthRemoteDatasourceImpl extends AuthRemoteDatasource {
@@ -107,7 +106,7 @@ class AuthRemoteDatasourceImpl extends AuthRemoteDatasource {
   }
 
   @override
-  Future<UserModel> getme(Uint32 id, String token) async {
+  Future<UserModel> getme(int id, String token) async {
     try {
       final response = await _client.get(
         Uri.parse(AuthApiUrls.getme(id)),
