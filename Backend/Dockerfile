@@ -9,7 +9,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download && go mod verify
 
-COPY .env .env
+# COPY .env .env
 
 # Copy all source files
 COPY . .
