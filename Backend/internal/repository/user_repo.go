@@ -36,3 +36,23 @@ func (r *userRepository) GetAll() ([]*models.UserResponse, error) {
 
 	return userResponses, nil
 }
+
+// GetUserByID returns a user by ID as UserResponse
+func (r *userRepository) GetUserByID(id int) (*models.UserResponse, error) {
+	var user models.User
+	err := r.db.First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return user.ToResponse(), nil
+}
+
+func (r *userRepository) GetByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

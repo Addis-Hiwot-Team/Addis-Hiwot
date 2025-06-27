@@ -25,6 +25,14 @@ func main() {
 	router := gin.Default()
 	http.SetupRoutes(router, cfg)
 
-	log.Println("Server running at", cfg.ServerPort)
-	router.Run(":" + cfg.ServerPort)
+	port := cfg.ServerPort
+	if port == "" {
+		port = "8080"
+	}
+	if port[0] != ':' {
+		port = ":" + port
+	}
+
+	log.Println("Server running at", port)
+	router.Run(port)
 }

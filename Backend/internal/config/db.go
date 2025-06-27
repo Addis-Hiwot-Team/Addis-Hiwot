@@ -16,28 +16,39 @@ type DB struct {
 }
 
 func NewDB(cfg *Config) *DB {
-
-	gromLogger := logger.New(
+	gormLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
-			SlowThreshold:             time.Second,  // Slow SQL threshold
-			LogLevel:                  logger.Error, // Log level
-			IgnoreRecordNotFoundError: false,        // Ignore record not found error
-			Colorful:                  true,         // Enable colorful output
+			SlowThreshold:             time.Second,
+			LogLevel:                  logger.Error,
+			IgnoreRecordNotFoundError: false,
+			Colorful:                  true,
 		},
 	)
-	db, err := gorm.Open(
-		postgres.Open(cfg.DSN()),
-		&gorm.Config{
-			Logger: gromLogger,
-		},
-	)
+
+	var db *gorm.DB
+	var err error
+
+	maxAttempts := 5
+	for i := 1; i <= maxAttempts; i++ {
+		db, err = gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{
+			Logger: gormLogger,
+		})
+
+		if err == nil {
+			log.Printf("✅ Connected to DB on attempt %d", i)
+			break
+		}
+
+		log.Printf("❌ Attempt %d: failed to connect to DB: %v", i, err)
+		time.Sleep(3 * time.Second)
+	}
+
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		log.Fatalf("❌ All attempts to connect to DB failed: %v", err)
 	}
-	return &DB{
-		Db: db,
-	}
+
+	return &DB{Db: db}
 }
 
 func (db *DB) Migrate() {

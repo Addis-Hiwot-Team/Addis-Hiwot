@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	// "golang.org/x/oauth2/jwt"
 )
 
 type User struct {
@@ -54,3 +55,12 @@ func (u *User) ToResponse() *UserResponse {
 		UpdatedAt:    u.UpdatedAt,
 	}
 }
+
+// // UserClaims represents the JWT claims for a user
+// type UserClaims struct {
+// 	ID       int    `json:"id"`
+// 	Email    string `json:"email"`
+// 	Username string `json:"username"`
+// 	Role     string `json:"role"`
+// 	jwt.StandardClaims
+// }
