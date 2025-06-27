@@ -22,5 +22,6 @@ go.sum
 *.log
 *.tmp
 
-
+.air.toml
 tree.*
+/tmp
