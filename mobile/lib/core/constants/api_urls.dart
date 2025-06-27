@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 class AuthApiUrls {
   static const String baseurl = 'h';
@@ -6,5 +5,5 @@ class AuthApiUrls {
   static String login() => '$baseurl/login';
   static String signup() => '$baseurl/signup';
   static String logout() => '$baseurl/logout';
-  static String getme(Uint32 id) => '$baseurl/id';
+  static String getme(int id) => '$baseurl/id';
 }

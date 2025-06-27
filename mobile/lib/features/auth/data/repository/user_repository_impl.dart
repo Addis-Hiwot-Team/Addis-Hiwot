@@ -57,6 +57,7 @@ class UserRepositoryImpl extends UserRepository {
       } on SocketException {
         return const Left(NetworkFailure(message: 'No internet connection.'));
       } catch (_) {
+        
         return const Left(ServerFailure(message: 'Unexpected login error.'));
       }
     } else {
@@ -93,14 +94,15 @@ class UserRepositoryImpl extends UserRepository {
       }
 
       if (await networkInfo.isConnected) {
-        try {
-          final updatedUser = await remote.getme(cachedUser.userId, token);
-          await local.saveUser(updatedUser);
-          return Right(updatedUser.toEntity());
-        } on ServerException {
-          return Right(cachedUser.toEntity()); // fallback
-        }
-      }
+  try {
+    final updatedUser = await remote.getme(cachedUser.userId, token);
+    await local.saveUser(updatedUser);
+    return Right(updatedUser.toEntity());
+  } on ServerException {
+    return Right(cachedUser.toEntity()); // fallback
+  }
+}
+
       return Right(cachedUser.toEntity());
     } catch (_) {
       return const Left(ServerFailure(message: 'Failed to get user info.'));
