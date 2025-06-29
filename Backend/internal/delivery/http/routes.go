@@ -25,13 +25,6 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	middleware := middlewares.New(sessionRepo)
 	api := r.Group("/api/v1")
 
-	// AUthentication routes
-	auth := api.Group("/auth")
-	{
-		auth.POST("/register", userHandler.CreateUser)
-		auth.POST("/login", userHandler.LoginUser)
-	}
-
 	{
 		api.GET("/users", userHandler.GetUsers)
 	}

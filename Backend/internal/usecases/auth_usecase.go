@@ -37,6 +37,7 @@ func (au *authUsecase) Register(req schema.CreateUser) (*models.UserResponse, er
 		Email:        req.Email,
 		ProfileImage: req.ProfileImage,
 		PasswordHash: hashedPwd,
+		Role:         "user", // default
 	}
 	err := au.ar.Create(user)
 	if err != nil {
