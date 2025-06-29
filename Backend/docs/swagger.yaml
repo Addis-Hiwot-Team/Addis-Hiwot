@@ -1,0 +1,142 @@
+definitions:
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.LoginReq:
+    properties:
+      identifier:
+        minLength: 3
+        type: string
+      password:
+        minLength: 3
+        type: string
+    required:
+    - identifier
+    - password
+    type: object
+  handlers.LoginResponse:
+    properties:
+      auth_token:
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      profile_image:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  schema.CreateUser:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+      profile_image:
+        maxLength: 255
+        type: string
+      username:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+externalDocs:
+  description: OpenAPI
+info:
+  contact: {}
+  description: This is api documentaion for AddisHiwot API.
+  title: Addis Hiwot API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      description: logs in user using their crediential
+      parameters:
+      - description: Login request body
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: login request hanlder
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: logs out user
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: logout request hanlder
+      tags:
+      - auth
+  /auth/register:
+    post:
+      description: registers a new user
+      parameters:
+      - description: Register request body
+        in: body
+        name: registerRequest
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CreateUser'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: register request hanlder
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
