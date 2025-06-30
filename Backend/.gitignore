@@ -16,7 +16,7 @@
 
 # Dependency cache
 vendor/
-go.sum
+# go.sum
 
 # Logs and temporary files
 *.log
