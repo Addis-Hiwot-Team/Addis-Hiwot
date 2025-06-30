@@ -56,3 +56,12 @@ func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+func (r *userRepository) GetByUsername(username string) (*models.User, error) {
+	var user models.User
+	err := r.db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

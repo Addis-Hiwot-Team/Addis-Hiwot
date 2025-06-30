@@ -28,6 +28,12 @@ func (uc *UserUsecase) Register(input *schema.CreateUser) (string, error) {
 		return "", errors.New("user already exists")
 	}
 
+	_, err = uc.repo.GetByUsername(input.Username)
+
+	if err == nil {
+		return "", errors.New("username already exists")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
