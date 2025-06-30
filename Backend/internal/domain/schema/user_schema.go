@@ -2,8 +2,6 @@ package schema
 
 import (
 	"addis-hiwot/internal/domain/models"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateUser struct {
@@ -20,12 +18,10 @@ type LoginUser struct {
 }
 
 func (cu *CreateUser) DBUser() *models.User {
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(cu.Password), bcrypt.DefaultCost)
 	return &models.User{
 		Name:         cu.Name,
 		Email:        cu.Email,
 		Username:     cu.Username,
 		ProfileImage: cu.ProfileImage,
-		PasswordHash: string(hashedPassword),
 	}
 }
