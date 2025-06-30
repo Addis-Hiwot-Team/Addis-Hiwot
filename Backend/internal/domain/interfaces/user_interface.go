@@ -7,4 +7,5 @@ type UserRepository interface {
 	GetAll() ([]*models.UserResponse, error)
 	GetUserByID(id int) (*models.UserResponse, error)
 	GetByEmail(email string) (*models.User, error)
+	GetByUsername(username string) (*models.User, error)
 }

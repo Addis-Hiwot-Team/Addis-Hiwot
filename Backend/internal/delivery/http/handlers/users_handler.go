@@ -24,13 +24,16 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.uc.Register(&userCreateSchema)
+	token, err := h.uc.Register(&userCreateSchema)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	c.JSON(http.StatusCreated, gin.H{
+		"message":      "User registered successfully",
+		"access_token": token,
+	})
 }
 
 func (h *UserHandler) LoginUser(c *gin.Context) {
@@ -46,7 +49,7 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"message": "user logged in successfully", "access_token": token})
 }
 
 func (h *UserHandler) GetUsers(c *gin.Context) {
