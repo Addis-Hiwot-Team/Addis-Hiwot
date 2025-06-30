@@ -3,44 +3,61 @@ package usecases
 import (
 	"addis-hiwot/internal/domain/interfaces"
 	"addis-hiwot/internal/domain/models"
+	"addis-hiwot/internal/domain/schema"
 	"errors"
+	"time"
 
-	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUsecase struct {
-	repo     interfaces.UserRepository
-	validate *validator.Validate
+	repo       interfaces.UserRepository
+	jwtService interfaces.JWTService
 }
 
-func NewUserUsecase(repo interfaces.UserRepository) *UserUsecase {
+func NewUserUsecase(r interfaces.UserRepository, j interfaces.JWTService) *UserUsecase {
 	return &UserUsecase{
-		repo:     repo,
-		validate: validator.New(),
+		repo:       r,
+		jwtService: j,
 	}
 }
 
-func (uc *UserUsecase) Create(user *models.User) (*models.UserResponse, error) {
-	// Validate struct fields using tags in the model
-	if err := uc.validate.Struct(user); err != nil {
-		return nil, err
+func (uc *UserUsecase) Register(input *schema.CreateUser) (string, error) {
+	_, err := uc.repo.GetByEmail(input.Email)
+	if err == nil {
+		return "", errors.New("user already exists")
 	}
 
-	// Hash the password before saving
-	if user.PasswordHash == "" {
-		return nil, errors.New("password cannot be empty")
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	user.PasswordHash = string(hashedPassword)
 
-	// Call repository to save user
-	createdUser, err := uc.repo.Create(user)
-	return createdUser.ToResponse(), err
+	user := input.DBUser()
+	user.PasswordHash = string(hashedPassword)
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
+	newUser, err := uc.repo.Create(user)
+
+	if err != nil {
+		return "", err
+	}
+
+	return uc.jwtService.GenerateToken(newUser)
+}
+
+func (uc *UserUsecase) Login(input *schema.LoginUser) (string, error) {
+	user, err := uc.repo.GetByEmail(input.Email)
+	if err != nil || user == nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	return uc.jwtService.GenerateToken(user)
 }
 
 func (uc *UserUsecase) GetAll() ([]*models.UserResponse, error) {
