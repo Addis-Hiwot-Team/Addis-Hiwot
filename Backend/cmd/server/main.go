@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		log.Println("No .env file found")
 	}
-	docs.SwaggerInfo.BasePath = "/api"
+	docs.SwaggerInfo.BasePath = "/api/v1"
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Config error:", err)

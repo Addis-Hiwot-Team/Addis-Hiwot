@@ -29,7 +29,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.LoginResponse"
+                            "$ref": "#/definitions/schema.AuthTokenPair"
                         }
                     },
                     "401": {
@@ -43,14 +43,64 @@
         },
         "/auth/logout": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "logs out user",
                 "tags": [
                     "auth"
                 ],
                 "summary": "logout request hanlder",
+                "parameters": [
+                    {
+                        "description": "Logout request body",
+                        "name": "logoutRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.RefreshReq"
+                        }
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "refreshes the access token using the refresh token",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "refresh request handler",
+                "parameters": [
+                    {
+                        "description": "Refresh request body",
+                        "name": "refreshRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.RefreshReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schema.AuthTokenPair"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -128,10 +178,13 @@
                 }
             }
         },
-        "handlers.LoginResponse": {
+        "handlers.RefreshReq": {
             "type": "object",
+            "required": [
+                "refresh_token"
+            ],
             "properties": {
-                "auth_token": {
+                "refresh_token": {
                     "type": "string"
                 }
             }
@@ -164,6 +217,17 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "schema.AuthTokenPair": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
                     "type": "string"
                 }
             }

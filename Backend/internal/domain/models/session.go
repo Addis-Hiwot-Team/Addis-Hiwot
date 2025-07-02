@@ -3,7 +3,8 @@ package models
 import "time"
 
 type Session struct {
-	Token  string    `gorm:"primaryKey;size:512"`
-	UserID uint      `gorm:"index"`
-	Exp    time.Time `gorm:"index"`
+	RefreshToken string    `gorm:"primaryKey;size:512"`
+	UserID       uint      `gorm:"index"`
+	Exp          time.Time `gorm:"index"`
+	CreatedAt    time.Time
 }

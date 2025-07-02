@@ -7,3 +7,7 @@ type AuthClaim struct {
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
+type AuthTokenPair struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}

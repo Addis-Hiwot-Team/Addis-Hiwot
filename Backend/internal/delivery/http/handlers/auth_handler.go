@@ -42,9 +42,6 @@ func (ah *AuthHandler) Register(ctx *gin.Context) {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
-type LoginResponse struct {
-	AuthToken string `json:"auth_token"`
-}
 
 type LoginReq struct {
 	Identifier string `json:"identifier" binding:"required,min=3"`
@@ -55,7 +52,7 @@ type LoginReq struct {
 // @Description  logs in user using their crediential
 // @Tags         auth
 // @Param        loginRequest   body      LoginReq  true "Login request body"
-// @Success      200  {object}  LoginResponse
+// @Success      200  {object}  schema.AuthTokenPair
 // @Failure      401  {object}  ErrorResponse
 // @Router       /auth/login [post]
 func (ah *AuthHandler) Login(ctx *gin.Context) {
@@ -64,28 +61,67 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 	if err := ctx.BindJSON(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 	}
-	token, err := ah.auc.Login(req.Identifier, req.Password)
+	tokens, err := ah.auc.Login(req.Identifier, req.Password)
 	if err != nil {
 		ctx.JSON(401, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(200, gin.H{"auth_token": token})
+	ctx.JSON(200, tokens)
 
+}
+
+type RefreshReq struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 // @Summary      logout request hanlder
 // @Description  logs out user
 // @Tags         auth
 // @Success      204
+// @Param		 logoutRequest  body 	RefreshReq  true "Logout request body"
 // @Failure      401  {object}  ErrorResponse
+// @Security	 BearerAuth
 // @Router       /auth/logout [post]
 func (ah *AuthHandler) Logout(ctx *gin.Context) {
-	token := strings.Split(ctx.GetHeader("Authorization"), " ")[1]
+	var req RefreshReq
+	if ctx.BindJSON(&req) != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+	if req.RefreshToken == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Refresh token is required"})
+		return
+	}
 
-	err := ah.auc.Logout(token)
+	accessToken := strings.Split(ctx.GetHeader("Authorization"), " ")[1]
+
+	err := ah.auc.Logout(accessToken, req.RefreshToken)
 	if err != nil {
 		ctx.JSON(401, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.Status(http.StatusNoContent)
+}
+
+// @Summary      refresh request handler
+// @Description  refreshes the access token using the refresh token
+// @Tags         auth
+// @Param        refreshRequest   body      RefreshReq  true "Refresh request body"
+// @Success      200  {object}  schema.AuthTokenPair
+// @Failure      401  {object}  ErrorResponse
+// @Router       /auth/refresh [post]
+func (ah *AuthHandler) Refresh(ctx *gin.Context) {
+
+	var req RefreshReq
+	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tokens, err := ah.auc.Refresh(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, tokens)
 }

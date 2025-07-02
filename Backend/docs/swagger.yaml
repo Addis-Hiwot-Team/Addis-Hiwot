@@ -16,10 +16,12 @@ definitions:
     - identifier
     - password
     type: object
-  handlers.LoginResponse:
+  handlers.RefreshReq:
     properties:
-      auth_token:
+      refresh_token:
         type: string
+    required:
+    - refresh_token
     type: object
   models.UserResponse:
     properties:
@@ -40,6 +42,13 @@ definitions:
       updated_at:
         type: string
       username:
+        type: string
+    type: object
+  schema.AuthTokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
         type: string
     type: object
   schema.CreateUser:
@@ -87,7 +96,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.LoginResponse'
+            $ref: '#/definitions/schema.AuthTokenPair'
         "401":
           description: Unauthorized
           schema:
@@ -98,6 +107,13 @@ paths:
   /auth/logout:
     post:
       description: logs out user
+      parameters:
+      - description: Logout request body
+        in: body
+        name: logoutRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RefreshReq'
       responses:
         "204":
           description: No Content
@@ -105,7 +121,31 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: logout request hanlder
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      description: refreshes the access token using the refresh token
+      parameters:
+      - description: Refresh request body
+        in: body
+        name: refreshRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RefreshReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.AuthTokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: refresh request handler
       tags:
       - auth
   /auth/register:

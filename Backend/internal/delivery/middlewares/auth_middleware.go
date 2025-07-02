@@ -41,9 +41,9 @@ func (m *Middleware) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		//if user logged out before the token expired
-		_, err = m.sr.Get(tokenStr)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		blacklisted, _ := m.sr.IsBlacklisted(tokenStr)
+		if blacklisted {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "revoked token"})
 		}
 		claims, ok := token.Claims.(*schema.AuthClaim)
 		if !ok {
