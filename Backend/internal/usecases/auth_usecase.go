@@ -161,7 +161,7 @@ func (au *authUsecase) OAuthLoginWithCode(provider, code, redirectURI string) (*
 // Extracted helper function for token generation
 // if refresh is true it will assume you want to reuse  refresh token will be created
 func (au *authUsecase) generateTokens(user *models.User, refresh bool) (*schema.AuthTokenPair, error) {
-	var tokens *schema.AuthTokenPair
+	tokens := &schema.AuthTokenPair{}
 	// Access token (short-lived)
 	accessExp := time.Now().Add(15 * time.Minute)
 	accessClaims := &schema.AuthClaim{
@@ -199,8 +199,6 @@ func (au *authUsecase) generateTokens(user *models.User, refresh bool) (*schema.
 		tokens.RefreshToken = refreshToken
 	}
 
-	tokens = &schema.AuthTokenPair{
-		AccessToken: accessToken,
-	}
+	tokens.AccessToken = accessToken
 	return tokens, nil
 }
