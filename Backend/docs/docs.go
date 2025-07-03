@@ -85,6 +85,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/oauth": {
+            "post": {
+                "description": "logs in user using OAuth provider",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "OAuth login request handler",
+                "parameters": [
+                    {
+                        "description": "OAuth Code request body",
+                        "name": "oauthCodeRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.OAuthCodereq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schema.AuthTokenPair"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh": {
             "post": {
                 "description": "refreshes the access token using the refresh token",
@@ -183,6 +217,20 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 3
+                }
+            }
+        },
+        "handlers.OAuthCodereq": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "redirect_uri": {
+                    "type": "string"
                 }
             }
         },

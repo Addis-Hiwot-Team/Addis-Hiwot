@@ -16,6 +16,15 @@ definitions:
     - identifier
     - password
     type: object
+  handlers.OAuthCodereq:
+    properties:
+      code:
+        type: string
+      provider:
+        type: string
+      redirect_uri:
+        type: string
+    type: object
   handlers.RefreshReq:
     properties:
       refresh_token:
@@ -124,6 +133,28 @@ paths:
       security:
       - BearerAuth: []
       summary: logout request hanlder
+      tags:
+      - auth
+  /auth/oauth:
+    post:
+      description: logs in user using OAuth provider
+      parameters:
+      - description: OAuth Code request body
+        in: body
+        name: oauthCodeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.OAuthCodereq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.AuthTokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: OAuth login request handler
       tags:
       - auth
   /auth/refresh:

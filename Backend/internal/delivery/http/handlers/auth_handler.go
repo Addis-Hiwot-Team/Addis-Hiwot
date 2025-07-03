@@ -125,3 +125,33 @@ func (ah *AuthHandler) Refresh(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, tokens)
 }
+
+type OAuthCodereq struct {
+	Provider    string `json:"provider"`
+	Code        string `json:"code"`
+	RedirectURI string `json:"redirect_uri"`
+}
+
+// @Summary      OAuth login request handler
+// @Description  logs in user using OAuth provider
+// @Tags         auth
+// @Param 	  oauthCodeRequest   body      OAuthCodereq  true "OAuth Code request body"
+// @Success      200  {object}  schema.AuthTokenPair
+// @Failure      401  {object}  ErrorResponse
+// @Router  /auth/oauth  [post]
+func (h *AuthHandler) OAuthCodeLoginHandler(c *gin.Context) {
+
+	var req OAuthCodereq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	tokens, err := h.auc.OAuthLoginWithCode(req.Provider, req.Code, req.RedirectURI)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tokens)
+}

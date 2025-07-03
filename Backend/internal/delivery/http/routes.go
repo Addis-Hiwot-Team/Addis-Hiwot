@@ -38,6 +38,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/logout", middleware.AuthMiddleware(), authHandler.Logout)
 		auth.POST("/refresh", authHandler.Refresh)
+		auth.POST("/oauth", authHandler.OAuthCodeLoginHandler)
 	}
 	api.GET("/protected", middleware.AuthMiddleware(), middlewares.CheckRoles("user"), func(ctx *gin.Context) {
 		ctx.JSON(200, "success")
