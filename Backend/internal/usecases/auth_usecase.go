@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"addis-hiwot/internal/domain/interfaces"
 	"addis-hiwot/internal/domain/models"
 	"addis-hiwot/internal/domain/schema"
 	"addis-hiwot/internal/repository"
@@ -15,25 +16,33 @@ import (
 )
 
 type AuthUsecase interface {
-	Login(identifier, password string) (*schema.AuthTokenPair, error)
+	Login(identifier, password string) (*schema.AuthResponse, error)
 	Logout(accessToken, refreshToken string) error
-	Register(req schema.CreateUser) (*models.UserResponse, error)
+	Register(req schema.CreateUser) (*schema.AuthResponse, error)
 	Refresh(refreshToken string) (*schema.AuthTokenPair, error)
+	ActivateAccount(token string) error
 	OAuthLoginWithCode(provider, code, redirectURI string) (*schema.AuthTokenPair, error)
 }
 type authUsecase struct {
-	ar repository.AuthRepository
-	sr repository.SessionRepository
-	oa *service.OAuthService // Optional, if you want to add OAuth support later
+	ar        repository.AuthRepository
+	userRepo  interfaces.UserRepository
+	sr        repository.SessionRepository
+	oa        *service.OAuthService // Optional, if you want to add OAuth support later
+	otpRepo   repository.OtpRepo
+	emailSrvs service.EmailService
 }
 
 func NewAuthUsecase(
 	ar repository.AuthRepository,
-	sr repository.SessionRepository) *authUsecase {
-	return &authUsecase{ar: ar, sr: sr, oa: service.NewOAuthService()}
+	sr repository.SessionRepository,
+	or repository.OtpRepo,
+	ur interfaces.UserRepository,
+	es service.EmailService,
+) *authUsecase {
+	return &authUsecase{ar: ar, sr: sr, oa: service.NewOAuthService(), otpRepo: or, emailSrvs: es, userRepo: ur}
 }
 
-func (au *authUsecase) Register(req schema.CreateUser) (*models.UserResponse, error) {
+func (au *authUsecase) Register(req schema.CreateUser) (*schema.AuthResponse, error) {
 
 	hashedPwd, _ := utils.HashPassword(req.Password)
 	user := &models.User{
@@ -50,16 +59,41 @@ func (au *authUsecase) Register(req schema.CreateUser) (*models.UserResponse, er
 	}
 
 	// Generate tokens for the new user
-	_, err = au.generateTokens(user, false)
+	tokens, err := au.generateTokens(user, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return user.ToResponse(), nil
+	resp := &schema.AuthResponse{
+		User:   user.ToResponse(),
+		Tokens: tokens,
+	}
+	//send verification email
+	code := utils.GenerateOTP()
+	otp := &models.Otp{
+		UserID: uint(user.ID),
+		Code:   code,
+		Type:   "email_verification",
+		Exp:    time.Now().Add(24 * time.Hour), // 24 hours
+	}
+	if _, err := au.otpRepo.Create(otp); err != nil {
+		log.Println("failed to create otp:", err)
+		return nil, fmt.Errorf("failed to create otp")
+	}
+	err = au.emailSrvs.SendEmail(user.Email, "Activate Account", "activate_account.html", map[string]any{
+		"ActivationLink": os.Getenv("FRONTEND_URL") + "/activate?token=" + code,
+		"CurrentYear":    time.Now().Year(),
+		"WebsiteLink":    "https://www.addishiwt.com",
+		"SupportLink":    "mailto:support@addishiwt.com",
+	})
 
-	// user := &models.User{}
+	if err != nil {
+		log.Println("failed to send verification email:", err)
+	}
+	return resp, nil
+
 }
-func (au *authUsecase) Login(identifier, password string) (*schema.AuthTokenPair, error) {
+func (au *authUsecase) Login(identifier, password string) (*schema.AuthResponse, error) {
 	user, err := au.ar.GetUserByIdentifier(identifier)
 	if err != nil {
 		return nil, err
@@ -70,7 +104,15 @@ func (au *authUsecase) Login(identifier, password string) (*schema.AuthTokenPair
 	}
 
 	// Generate tokens for the user
-	return au.generateTokens(user, false)
+	tokens, err := au.generateTokens(user, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate tokens: %w", err)
+	}
+	resp := &schema.AuthResponse{
+		User:   user.ToResponse(),
+		Tokens: tokens,
+	}
+	return resp, nil
 }
 func (au *authUsecase) Logout(accessToken, refreshToken string) error {
 	// Blacklist access token
@@ -201,4 +243,27 @@ func (au *authUsecase) generateTokens(user *models.User, refresh bool) (*schema.
 
 	tokens.AccessToken = accessToken
 	return tokens, nil
+}
+
+func (au *authUsecase) ActivateAccount(token string) error {
+	// Validate OTP
+	otp, err := au.otpRepo.Get(token, "email_verification")
+	if err != nil {
+		return fmt.Errorf("invalid activation token: %w", err)
+	}
+	if otp.Exp.Before(time.Now()) {
+		return fmt.Errorf("activation token expired")
+	}
+
+	// Activate user account
+	err = au.userRepo.Activate(int(otp.UserID))
+	if err != nil {
+		return fmt.Errorf("faild to activate user: %w", err)
+	}
+	// Delete OTP after successful activation
+	if err := au.otpRepo.Delete(otp.ID); err != nil {
+		log.Printf("failed to delete OTP after activation: %v", err)
+	}
+
+	return nil
 }

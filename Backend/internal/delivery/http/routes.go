@@ -39,7 +39,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 
 	auth := api.Group("/auth")
 	authRepo := repository.NewAuthRepository(db)
-	authUC := usecases.NewAuthUsecase(authRepo, sessionRepo)
+	authUC := usecases.NewAuthUsecase(authRepo, sessionRepo, otpRepo, userRepo, emailServ)
 	authHandler := handlers.NewAuthHander(authUC)
 	{
 		auth.POST("/register", authHandler.Register)
@@ -47,6 +47,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		auth.POST("/logout", middleware.AuthMiddleware(), authHandler.Logout)
 		auth.POST("/refresh", authHandler.Refresh)
 		auth.POST("/oauth", authHandler.OAuthCodeLoginHandler)
+		auth.GET("/activate/:code", authHandler.ActivateAccount)
 	}
 	api.GET("/protected", middleware.AuthMiddleware(), middlewares.CheckRoles("user"), func(ctx *gin.Context) {
 		ctx.JSON(200, "success")

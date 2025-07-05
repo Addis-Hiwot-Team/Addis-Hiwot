@@ -31,12 +31,15 @@ func (ah *AuthHandler) Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := ah.auc.Register(req)
+	data, err := ah.auc.Register(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusCreated, user)
+	ctx.JSON(http.StatusCreated, schema.APIResponse{
+		Message: "User registered successfully",
+		Data:    data,
+	})
 }
 
 type ErrorResponse struct {
@@ -66,7 +69,9 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 		ctx.JSON(401, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(200, tokens)
+	ctx.JSON(200, schema.APIResponse{
+		Message: "Login successful",
+		Data:    tokens})
 
 }
 
@@ -154,4 +159,28 @@ func (h *AuthHandler) OAuthCodeLoginHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, tokens)
+}
+
+// @Summary 	Activate account request handler
+// @Description 	Activates user account using activation code
+// @Tags 		auth
+// @Param 		code path string true "Activation code"
+// @Success 	200 {object} schema.APIMessage
+// @Failure 	400 {object} ErrorResponse
+// @Failure 	500 {object} ErrorResponse
+// @Router 	/auth/activate/{code} [get]
+func (h *AuthHandler) ActivateAccount(c *gin.Context) {
+	activationCode := c.Param("code")
+	if activationCode == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "activation code is required"})
+		return
+	}
+
+	err := h.auc.ActivateAccount(activationCode)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "account activated successfully"})
 }

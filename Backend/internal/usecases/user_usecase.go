@@ -147,3 +147,26 @@ func (uc *UserUsecase) ResetPassword(code, newPassword string) error {
 	utils.LogIfError("PWD:Reset", uc.otpRepo.Delete(otp.ID))
 	return nil
 }
+
+func (uc *UserUsecase) ActivateAccount(code string) error {
+	otp, err := uc.otpRepo.Get(code, "account_verification")
+	if err != nil {
+		return errors.New("invalid or expired code")
+	}
+	if otp.Exp.Before(time.Now()) {
+		return errors.New("code has expired")
+	}
+
+	user, err := uc.repo.Get(int(otp.UserID))
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	if err := uc.repo.Activate(user.ID); err != nil {
+		return err
+	}
+
+	// Invalidate the OTP
+	utils.LogIfError("ACC:Verify", uc.otpRepo.Delete(otp.ID))
+	return nil
+}

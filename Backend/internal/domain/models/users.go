@@ -11,7 +11,7 @@ import (
 type User struct {
 	ID           int       `gorm:"primaryKey;column:id" json:"id"`
 	Email        string    `gorm:"type:varchar(255);uniqueIndex" json:"email" validate:"required,email"`
-	Username     string    `gorm:"type:varchar(255)" json:"username" validate:"required,min=3,max=32"`
+	Username     string    `gorm:"type:varchar(255);uniqueIndex" json:"username" validate:"required,min=3,max=32"`
 	Name         string    `gorm:"type:varchar(255)" json:"name"`
 	ProfileImage string    `gorm:"type:varchar(255)" json:"profile_image"`
 	PasswordHash string    `gorm:"type:varchar(255)" json:"password_hash" validate:"required,min=6"`

@@ -134,6 +134,31 @@ info:
   title: Addis Hiwot API
   version: "1.0"
 paths:
+  /auth/activate/{code}:
+    get:
+      description: Activates user account using activation code
+      parameters:
+      - description: Activation code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Activate account request handler
+      tags:
+      - auth
   /auth/login:
     post:
       description: logs in user using their crediential
