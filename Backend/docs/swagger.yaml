@@ -1,8 +1,29 @@
 definitions:
+  handlers.ChangePasswordReq:
+    properties:
+      new_password:
+        maxLength: 32
+        minLength: 3
+        type: string
+      password:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - new_password
+    - password
+    type: object
   handlers.ErrorResponse:
     properties:
       error:
         type: string
+    type: object
+  handlers.ForgotPasswordReq:
+    properties:
+      email:
+        type: string
+    required:
+    - email
     type: object
   handlers.LoginReq:
     properties:
@@ -32,6 +53,18 @@ definitions:
     required:
     - refresh_token
     type: object
+  handlers.ResetPasswordReq:
+    properties:
+      code:
+        type: string
+      new_password:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - code
+    - new_password
+    type: object
   models.UserResponse:
     properties:
       created_at:
@@ -51,6 +84,16 @@ definitions:
       updated_at:
         type: string
       username:
+        type: string
+    type: object
+  schema.APIError:
+    properties:
+      message:
+        type: string
+    type: object
+  schema.APIMessage:
+    properties:
+      message:
         type: string
     type: object
   schema.AuthTokenPair:
@@ -205,6 +248,98 @@ paths:
       summary: register request hanlder
       tags:
       - auth
+  /users/change_password:
+    post:
+      consumes:
+      - application/json
+      description: Change user password
+      parameters:
+      - description: Change Password Request
+        in: body
+        name: changePasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ChangePasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - users
+  /users/forgot_password:
+    post:
+      consumes:
+      - application/json
+      description: Request a password reset code
+      parameters:
+      - description: Forgot Password Request
+        in: body
+        name: forgotPasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ForgotPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      summary: Forgot password
+      tags:
+      - users
+  /users/reset_password:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using OTP code
+      parameters:
+      - description: Reset Password Request
+        in: body
+        name: resetPasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ResetPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      summary: Reset user password
+      tags:
+      - users
 securityDefinitions:
   BearerAuth:
     in: header

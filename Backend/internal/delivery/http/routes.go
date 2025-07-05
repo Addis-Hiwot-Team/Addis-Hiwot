@@ -15,10 +15,13 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	gormDB := config.NewDB(cfg)
 	gormDB.Migrate() // migrated before setting up routes
 	db := gormDB.Db
+	emailServ := service.NewEmailService()
+
+	otpRepo := repository.NewOtpRepo(db)
 
 	jwtService := service.NewJWTService(cfg.JWTSecret, cfg.TokenDuration)
 	userRepo := repository.NewUserRepository(db)
-	userUC := usecases.NewUserUsecase(userRepo, jwtService)
+	userUC := usecases.NewUserUsecase(userRepo, jwtService, emailServ, otpRepo)
 	userHandler := handlers.NewUserHandler(userUC)
 
 	sessionRepo := repository.NewSessionRepository(db)
@@ -27,6 +30,11 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 
 	{
 		api.GET("/users", userHandler.GetUsers)
+
+		//password related
+		api.POST("users/change_password", middleware.AuthMiddleware(), userHandler.ChangePassword)
+		api.POST("users/forgot_password", userHandler.ForgotPassword)
+		api.POST("users/reset_password", userHandler.ResetPassword)
 	}
 
 	auth := api.Group("/auth")

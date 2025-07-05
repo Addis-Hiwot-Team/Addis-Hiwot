@@ -10,7 +10,11 @@ import (
 	"path/filepath"
 )
 
-type EmailService struct {
+type EmailService interface {
+	SendEmail(to, subject, templateName string, params map[string]any) error
+}
+
+type emailService struct {
 	From        string
 	Password    string
 	Host        string
@@ -18,8 +22,8 @@ type EmailService struct {
 	TemplateDir string
 }
 
-func NewEmailService() *EmailService {
-	return &EmailService{
+func NewEmailService() EmailService {
+	return &emailService{
 		From:        os.Getenv("EMAIL_FROM"),
 		Password:    os.Getenv("EMAIL_PASSWORD"),
 		Host:        os.Getenv("EMAIL_HOST"),
@@ -28,7 +32,7 @@ func NewEmailService() *EmailService {
 	}
 }
 
-func (s *EmailService) parseTemplate(templateName string, params map[string]string) (string, error) {
+func (s *emailService) parseTemplate(templateName string, params map[string]any) (string, error) {
 	tplPath := filepath.Join(s.TemplateDir, templateName)
 	log.Println(tplPath)
 	tmpl, err := template.ParseFiles(tplPath)
@@ -44,7 +48,7 @@ func (s *EmailService) parseTemplate(templateName string, params map[string]stri
 	return body.String(), nil
 }
 
-func (s *EmailService) SendEmail(to, subject, templateName string, params map[string]string) error {
+func (s *emailService) SendEmail(to, subject, templateName string, params map[string]any) error {
 	body, err := s.parseTemplate(templateName, params)
 	if err != nil {
 		return fmt.Errorf("template error: %w", err)

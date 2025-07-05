@@ -67,6 +67,7 @@ func (db *DB) Migrate() {
 		&models.UserResource{},
 		&models.Session{},
 		&models.BlacklistedToken{},
+		&models.Otp{},
 	); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}
