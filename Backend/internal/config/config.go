@@ -37,6 +37,6 @@ func LoadConfig() (*Config, error) {
 }
 
 func (c *Config) DSN() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s channel_binding=require sslmode=require TimeZone=Africa/Addis_Ababa",
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=Africa/Addis_Ababa",
 		c.DBHost, c.DBUser, c.DBPassword, c.DBName, c.DBPort)
 }

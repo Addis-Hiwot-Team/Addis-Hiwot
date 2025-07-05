@@ -47,6 +47,15 @@ func (r *userRepository) GetUserByID(id int) (*models.UserResponse, error) {
 
 	return user.ToResponse(), nil
 }
+func (r *userRepository) Get(id int) (*models.User, error) {
+	var user models.User
+	err := r.db.First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
 
 func (r *userRepository) GetByEmail(email string) (*models.User, error) {
 	var user models.User
@@ -64,4 +73,31 @@ func (r *userRepository) GetByUsername(username string) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// Activate implements interfaces.UserRepository.
+func (r *userRepository) Activate(id int) error {
+	user, err := r.Get(id)
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&user).Update("is_active", true).Error
+}
+
+// ChangePassword implements interfaces.UserRepository.
+func (r *userRepository) ChangePassword(id int, newpassowrd string) error {
+	user, err := r.Get(id)
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&user).Update("password_hash", newpassowrd).Error
+}
+
+// IsActive implements interfaces.UserRepository.
+func (r *userRepository) IsActive(id int) bool {
+	user, err := r.Get(id)
+	if err != nil {
+		return false
+	}
+	return user.IsActive
 }
