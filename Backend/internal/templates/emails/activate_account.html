@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activate Your Addis Hiwot Account</title>
+    <style>
+      /* Basic Reset & Body Styling */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        background-color: #f4f4f4;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+
+      /* Container for the email content */
+      .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      /* Header Styling */
+      .header {
+        background-color: #4caf50; /* A pleasant, easy-on-the-eye green */
+        padding: 30px 20px;
+        text-align: center;
+        color: #ffffff;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      /* Content Area Styling */
+      .content {
+        padding: 30px;
+      }
+
+      .content h2 {
+        color: #2e8b57; /* Slightly darker green for headings */
+        font-size: 24px;
+        margin-top: 0;
+        margin-bottom: 20px;
+      }
+
+      .content p {
+        margin-bottom: 15px;
+        font-size: 16px;
+      }
+
+      /* Button Styling */
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .button {
+        display: inline-block;
+        background-color: #66bb6a; /* A slightly lighter, inviting green */
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 5px;
+        font-size: 18px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+      }
+
+      .button:hover {
+        background-color: #4caf50; /* Darker green on hover */
+      }
+
+      /* Footer Styling */
+      .footer {
+        background-color: #f0f0f0;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #777777;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .footer p {
+        margin: 5px 0;
+      }
+
+      .footer a {
+        color: #2e8b57;
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Addis Hiwot</h1>
+      </div>
+
+      <div class="content">
+        <h2>Welcome to Addis Hiwot!</h2>
+        <p>
+          Thank you for signing up for Addis Hiwot! We're excited to have you
+          join our community.
+        </p>
+        <p>
+          To activate your account and start exploring all the features Addis
+          Hiwot has to offer, please click the button below:
+        </p>
+
+        <div class="button-container">
+          <a href="{{.ActivationLink}}" class="button">Activate My Account</a>
+        </div>
+
+        <p>This activation link is valid for {{.ExpirationHours}} hours.</p>
+        <p>
+          If the button above doesn't work, you can copy and paste the following
+          link into your web browser:
+        </p>
+        <p>
+          <a
+            href="{{.ActivationLink}}"
+            style="color: #2e8b57; word-break: break-all"
+            >{{.ActivationLink}}</a
+          >
+        </p>
+
+        <p>
+          If you have any questions or encounter any issues, please feel free to
+          contact our support team. We're here to help you get started!
+        </p>
+        <p>Welcome aboard,<br />The Addis Hiwot Team</p>
+      </div>
+
+      <div class="footer">
+        <p>&copy; {{.CurrentYear}} Addis Hiwot. All rights reserved.</p>
+        <p>
+          <a href="{{.WebsiteLink}}">Addis Hiwot Website</a> |
+          <a href="{{.SupportLink}}">Support</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

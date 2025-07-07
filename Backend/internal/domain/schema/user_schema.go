@@ -25,3 +25,8 @@ func (cu *CreateUser) DBUser() *models.User {
 		ProfileImage: cu.ProfileImage,
 	}
 }
+
+type AuthResponse struct {
+	User   *models.UserResponse `json:"user"`
+	Tokens *AuthTokenPair       `json:"tokens"`
+}
