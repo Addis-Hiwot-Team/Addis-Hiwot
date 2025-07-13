@@ -5,15 +5,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"addis-hiwot/internal/domain/interfaces"
 	"addis-hiwot/internal/domain/schema"
-	"addis-hiwot/internal/usecases"
+	// "addis-hiwot/internal/usecases"
 )
 
 type UserHandler struct {
-	uc *usecases.UserUsecase
+	uc interfaces.UserUsecaseInterface
 }
 
-func NewUserHandler(uc *usecases.UserUsecase) *UserHandler {
+  
+
+func NewUserHandler(uc interfaces.UserUsecaseInterface) *UserHandler {
 	return &UserHandler{uc: uc}
 }
 
