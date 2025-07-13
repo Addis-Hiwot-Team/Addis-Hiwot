@@ -24,6 +24,11 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	userUC := usecases.NewUserUsecase(userRepo, jwtService, emailServ, otpRepo)
 	userHandler := handlers.NewUserHandler(userUC)
 
+	// daily check-in related
+	dailyCheckInRepo := repository.NewDailyCheckInRepository(db)
+	dailyCheckInUC := usecases.NewDailyCheckInUsecase(dailyCheckInRepo)
+	dailyCheckInHandler := handlers.NewDailyCheckInHandler(dailyCheckInUC)
+
 	sessionRepo := repository.NewSessionRepository(db)
 	middleware := middlewares.New(sessionRepo)
 	api := r.Group("/api/v1")
@@ -49,6 +54,17 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		auth.POST("/oauth", authHandler.OAuthCodeLoginHandler)
 		auth.GET("/activate/:code", authHandler.ActivateAccount)
 	}
+
+	// Daily Check-in routes
+	checkin := api.Group("/checkin")
+
+	// Apply the existing middleware to all routes in the "checkin" group
+	checkin.Use(middleware.AuthMiddleware())
+	{
+		checkin.POST("", dailyCheckInHandler.AddCheckIn)
+		checkin.GET("", dailyCheckInHandler.GetCheckIns)
+	}
+
 	api.GET("/protected", middleware.AuthMiddleware(), middlewares.CheckRoles("user"), func(ctx *gin.Context) {
 		ctx.JSON(200, "success")
 	})
