@@ -20,21 +20,24 @@ class UserRepositoryImpl extends UserRepository {
 
   @override
   Future<Either<Failure, UserEntity>> signup(
-      String username, String email, String password) async {
+      String Name, String username, String email, String password) async {
     if (await networkInfo.isConnected) {
       try {
-        final (token, user) = await remote.signup(username, email, password);
+        final (token, user) = await remote.signup(Name, username, email, password);
         await local.storeAccessToken(token);
         await local.saveUser(user);
         return Right(user.toEntity());
+      } on BusinessLogicException catch (e) {
+        return Left(BusinessLogicFailure(message: e.message));
       } on ServerException {
         return const Left(ServerFailure(message: 'Signup failed on server.'));
       } on SocketException {
         return const Left(NetworkFailure(message: 'No internet connection.'));
       } on ParsingException {
-        return const Left(ServerFailure(message: 'Error parsing response.'));
-      } catch (_) {
-        return const Left(ServerFailure(message: 'Unexpected signup error.'));
+        return const Left(ServerFailure(message: 'Error parsing response. Please check the API response format.'));
+      } catch (e) {
+        print('Repository signup error: $e');
+        return const Left(ServerFailure(message: 'Unexpected signup error. Please try again.'));
       }
     } else {
       return const Left(NetworkFailure(message: 'No internet connection.'));
@@ -48,16 +51,16 @@ class UserRepositoryImpl extends UserRepository {
       try {
         final (token, user) = await remote.login(identifier, password);
         await local.storeAccessToken(token);
-        await local.saveUser(user);
+        // Skip saving the dummy user for now
+        // await local.saveUser(user);
         return Right(user.toEntity());
-      } on UnauthroizedException {
+      } on UnauthorizedException {
         return const Left(ServerFailure(message: 'Invalid credentials.'));
       } on ServerException {
         return const Left(ServerFailure(message: 'Login failed on server.'));
       } on SocketException {
         return const Left(NetworkFailure(message: 'No internet connection.'));
       } catch (_) {
-        
         return const Left(ServerFailure(message: 'Unexpected login error.'));
       }
     } else {
