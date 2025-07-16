@@ -47,25 +47,34 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signup(String username, String email, String password) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  Future<bool> signup(String name, String username, String email, String password) async {
+  _isLoading = true;
+  _error = null;
+  notifyListeners();
 
-    final result = await signupUseCase(
-      username: username,
-      email: email,
-      password: password,
-    );
+  final result = await signupUseCase(
+    name: name,
+    username: username,
+    email: email,
+    password: password,
+  );
 
-    result.fold(
-      (failure) => _error = failure.message,
-      (user) => _user = user,
-    );
+  final isSuccess = result.fold(
+    (failure) {
+      _error = failure.message;
+      return false;
+    },
+    (user) {
+      _user = user;
+      return true;
+    },
+  );
 
-    _isLoading = false;
-    notifyListeners();
-  }
+  _isLoading = false;
+  notifyListeners();
+  return isSuccess;
+}
+
 
   Future<void> getMe() async {
     _isLoading = true;

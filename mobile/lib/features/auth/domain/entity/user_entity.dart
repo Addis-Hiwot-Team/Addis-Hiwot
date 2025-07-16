@@ -1,5 +1,6 @@
 class UserEntity {
   final int userId;
+  final String name;
   final String username;
   final String email;
   final String profileImage;
@@ -8,6 +9,7 @@ class UserEntity {
 
   UserEntity({
     required this.userId,
+    required this.name,
     required this.username,
     required this.email,
     required this.isActive,
