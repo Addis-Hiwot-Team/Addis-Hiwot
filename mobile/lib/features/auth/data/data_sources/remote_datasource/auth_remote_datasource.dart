@@ -6,6 +6,7 @@ import 'package:mobile/features/auth/data/model/user_model.dart';
 
 abstract class AuthRemoteDatasource {
   Future<(String, UserModel)> signup(
+    String name,
     String username,
     String email,
     String password,
@@ -22,26 +23,66 @@ class AuthRemoteDatasourceImpl extends AuthRemoteDatasource {
 
   @override
   Future<(String, UserModel)> signup(
-      String username, String email, String password) async {
+      String name, String username, String email, String password) async {
     try {
+      final requestBody = {
+        'Name': name,
+        'Username': username,
+        'Email': email,
+        'password': password,
+      };
+      
+      print('Signup URL: ${AuthApiUrls.signup()}');
+      print('Signup Request Body: ${jsonEncode(requestBody)}');
+      
       final response = await _client.post(
         Uri.parse(AuthApiUrls.signup()),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode(requestBody),
       );
+
+      print('Signup Response Status: ${response.statusCode}');
+      print('Signup Response Body: ${response.body}');
 
       final decoded = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
+        // Check if the expected structure exists
+        if (decoded['data'] == null) {
+          print('Error: No "data" field in response');
+          throw ParsingException();
+        }
+        
+        if (decoded['data']['token'] == null) {
+          print('Error: No "token" field in data');
+          throw ParsingException();
+        }
+        
+        if (decoded['data']['user'] == null) {
+          print('Error: No "user" field in data');
+          throw ParsingException();
+        }
+
         final String token = decoded['data']['token'];
         final user = UserModel.fromJson(decoded['data']['user']);
         return (token, user);
+      } else if (response.statusCode == 400) {
+        // Handle validation errors
+        if (decoded['message'] != null) {
+          throw ServerException();
+        }
+        throw UnexpectedException();
       } else if (response.statusCode == 401) {
-        throw UnauthroizedException();
+        throw UnauthorizedException();
+      } else if (response.statusCode == 500) {
+        // Handle business logic errors that return 500
+        if (decoded['error'] != null) {
+          final errorMessage = decoded['error'];
+          if (errorMessage == 'user already exists') {
+            throw BusinessLogicException('User already exists. Please try a different username or email.');
+          }
+        }
+        throw ServerException();
       } else if (response.statusCode >= 500) {
         throw ServerException();
       } else {
@@ -49,9 +90,11 @@ class AuthRemoteDatasourceImpl extends AuthRemoteDatasource {
       }
     } on http.ClientException {
       throw SocketException();
-    } on FormatException {
+    } on FormatException catch (e) {
+      print('FormatException during parsing: $e');
       throw ParsingException();
-    } catch (_) {
+    } catch (e) {
+      print('Unexpected error during signup: $e');
       throw UnexpectedException();
     }
   }
@@ -68,11 +111,13 @@ class AuthRemoteDatasourceImpl extends AuthRemoteDatasource {
       final decoded = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final String token = decoded['data']['token'];
-        final user = UserModel.fromJson(decoded['data']['user']);
+        // Handle backend response with only access_token
+        final String token = decoded['access_token'];
+        // Create a dummy user for now
+        final user = UserModel.empty(); // You may need to implement UserModel.empty()
         return (token, user);
       } else if (response.statusCode == 401) {
-        throw UnauthroizedException();
+        throw UnauthorizedException();
       } else if (response.statusCode >= 500) {
         throw ServerException();
       } else {
@@ -120,7 +165,7 @@ class AuthRemoteDatasourceImpl extends AuthRemoteDatasource {
       if (response.statusCode == 200) {
         return UserModel.fromJson(decoded['data']);
       } else if (response.statusCode == 401) {
-        throw UnauthroizedException();
+        throw UnauthorizedException();
       } else if (response.statusCode >= 500) {
         throw ServerException();
       } else {

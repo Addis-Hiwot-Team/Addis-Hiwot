@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:mobile/features/Dashboard/screen/dash_board.dart';
 import 'package:mobile/features/auth/presentation/login.dart';
 import 'package:provider/provider.dart';
 
@@ -10,6 +11,8 @@ import 'package:mobile/features/auth/presentation/password_reset/forget_pass.dar
 import 'package:mobile/features/auth/presentation/password_reset/verify_email.dart';
 import 'package:mobile/features/auth/presentation/password_reset/reset_page.dart';
 import 'package:mobile/features/auth/presentation/password_reset/success.dart';
+import 'package:mobile/features/daily_goals/presentation/pages/daily_goals_list_screen.dart';
+import 'package:mobile/features/Daily_checkin/presentation/pages/daily_checkin_screen.dart';
 
 // Auth Layer Imports
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
@@ -76,7 +79,7 @@ class MyApp extends StatelessWidget {
       useInheritedMediaQuery: true, // Required by DevicePreview
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
-      initialRoute: '/',
+      initialRoute: '/dashboard',
       routes: {
         '/': (context) => const LandingPage(),
         '/login': (context) => const LoginPage(),
@@ -85,6 +88,9 @@ class MyApp extends StatelessWidget {
         '/verify_email': (context) => const VerifyEmailPage(),
         '/reset_password': (context) => const ResetPasswordPage(),
         '/success': (context) => const SuccessPage(),
+        '/dashboard': (context) => const DashboardScreen(),
+        '/daily_goals': (context) => const DailyGoalsListScreen(),
+        '/daily_checkin': (context) =>  DailyCheckInScreen(),
       },
     );
   }

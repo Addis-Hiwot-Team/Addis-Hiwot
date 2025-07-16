@@ -13,12 +13,14 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   @override
   void dispose() {
+    nameController.dispose();
     usernameController.dispose();
     emailController.dispose();
     passwordController.dispose();
@@ -53,10 +55,31 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               const SizedBox(height: 40),
 
+              // Name TextField
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  // Trigger rebuild to update UI
+                  setState(() {});
+                },
+              ),
+              const SizedBox(height: 20),
+
               // Username TextField
               TextField(
                 controller: usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  // Trigger rebuild to update UI
+                  setState(() {});
+                },
               ),
               const SizedBox(height: 20),
 
@@ -64,7 +87,14 @@ class _SignUpPageState extends State<SignUpPage> {
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  // Trigger rebuild to update UI
+                  setState(() {});
+                },
               ),
               const SizedBox(height: 20),
 
@@ -72,39 +102,52 @@ class _SignUpPageState extends State<SignUpPage> {
               TextField(
                 controller: passwordController,
                 obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
                 decoration: const InputDecoration(
                   labelText: 'Password',
+                  border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.visibility_off_outlined),
                 ),
+                onChanged: (value) {
+                  // Trigger rebuild to update UI
+                  setState(() {});
+                },
               ),
               const SizedBox(height: 30),
 
               // Sign Up Button with loading state
               ElevatedButton(
+                onPressed: authProvider.isLoading
+                    ? null
+                    : () async {
+                        final success = await authProvider.signup(
+                          nameController.text.trim(),
+                          usernameController.text.trim(),
+                          emailController.text.trim(),
+                          passwordController.text,
+                        );
+                        
+                        if (success && mounted) {
+                          // Navigate to dashboard or show success message
+                          Navigator.of(context).pushReplacementNamed('/dashboard');
+                        } else if (mounted && authProvider.error != null) {
+                          // Show error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(authProvider.error!),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimaryButtonColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: authProvider.isLoading
-                    ? null
-                    : () async {
-                        await authProvider.signup(
-                          usernameController.text.trim(),
-                          emailController.text.trim(),
-                          passwordController.text.trim(),
-                        );
-
-                        if (authProvider.error == null) {
-                          // Navigate to login or home page after successful signup
-                          Navigator.pushReplacementNamed(context, '/login');
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(authProvider.error!)),
-                          );
-                        }
-                      },
+                
                 child: authProvider.isLoading
                     ? const SizedBox(
                         height: 20,
