@@ -7,19 +7,19 @@ import (
 	"time"
 )
 
-type MessageUsecase struct {
+type CommunityMessageUsecase struct {
 	communityRepo interfaces.CommunityRepository
 	userRepo      interfaces.UserRepository
 }
 
-func NewMessageUsecase(communityRepo interfaces.CommunityRepository, userRepo interfaces.UserRepository) *MessageUsecase {
-	return &MessageUsecase{
+func NewCommunityMessageUsecase(communityRepo interfaces.CommunityRepository, userRepo interfaces.UserRepository) *CommunityMessageUsecase {
+	return &CommunityMessageUsecase{
 		communityRepo: communityRepo,
 		userRepo:      userRepo,
 	}
 }
 
-func(usecase *MessageUsecase) GetAllMessages(ctx context.Context, limit int, before time.Time) ([]*schema.CommunityMessageResponse, bool, time.Time, error) {
+func(usecase *CommunityMessageUsecase) GetAllMessages(ctx context.Context, limit int, before time.Time) ([]*schema.CommunityMessageResponse, bool, time.Time, error) {
 	message, hasMore, nextPageTime, err := usecase.communityRepo.GetAllMessages(ctx, limit, before)
 	if err != nil {
 		return nil, false, time.Time{}, err
