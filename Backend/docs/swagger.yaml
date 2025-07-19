@@ -1,15 +1,432 @@
-basePath: /api/v1
-host: localhost:8080
+definitions:
+  handlers.ChangePasswordReq:
+    properties:
+      new_password:
+        maxLength: 32
+        minLength: 3
+        type: string
+      password:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - new_password
+    - password
+    type: object
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.ForgotPasswordReq:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  handlers.LoginReq:
+    properties:
+      email:
+        minLength: 3
+        type: string
+      password:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.OAuthCodereq:
+    properties:
+      code:
+        type: string
+      provider:
+        type: string
+      redirect_uri:
+        type: string
+    type: object
+  handlers.RefreshReq:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  handlers.ResetPasswordReq:
+    properties:
+      code:
+        type: string
+      new_password:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - code
+    - new_password
+    type: object
+  models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      profile_image:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  schema.APIError:
+    properties:
+      message:
+        type: string
+    type: object
+  schema.APIMessage:
+    properties:
+      message:
+        type: string
+    type: object
+  schema.AuthTokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  schema.CreateUser:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 255
+        type: string
+      password:
+        minLength: 6
+        type: string
+      profile_image:
+        maxLength: 255
+        type: string
+      username:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+externalDocs:
+  description: OpenAPI
 info:
-  contact:
-    email: team@addishiwot.org
-    name: Addis Hiwot Dev Team
-  description: Backend API for the Addis Hiwot platform.
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  termsOfService: http://swagger.io/terms/
+  contact: {}
+  description: This is api documentaion for AddisHiwot API.
   title: Addis Hiwot API
   version: "1.0"
-paths: {}
+paths:
+  /auth/activate/{code}:
+    get:
+      description: Activates user account using activation code
+      parameters:
+      - description: Activation code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Activate account request handler
+      tags:
+      - auth
+  /auth/login:
+    post:
+      description: logs in user using their crediential
+      parameters:
+      - description: Login request body
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.AuthTokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: login request hanlder
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: logs out user
+      parameters:
+      - description: Logout request body
+        in: body
+        name: logoutRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RefreshReq'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: logout request hanlder
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the currently authenticated user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get current user info
+      tags:
+      - auth
+  /auth/oauth:
+    post:
+      description: logs in user using OAuth provider
+      parameters:
+      - description: OAuth Code request body
+        in: body
+        name: oauthCodeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.OAuthCodereq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.AuthTokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: OAuth login request handler
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      description: refreshes the access token using the refresh token
+      parameters:
+      - description: Refresh request body
+        in: body
+        name: refreshRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RefreshReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.AuthTokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: refresh request handler
+      tags:
+      - auth
+  /auth/register:
+    post:
+      description: registers a new user
+      parameters:
+      - description: Register request body
+        in: body
+        name: registerRequest
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CreateUser'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: register request hanlder
+      tags:
+      - auth
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user details by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+  /users/change_password:
+    post:
+      consumes:
+      - application/json
+      description: Change user password
+      parameters:
+      - description: Change Password Request
+        in: body
+        name: changePasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ChangePasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - users
+  /users/forgot_password:
+    post:
+      consumes:
+      - application/json
+      description: Request a password reset code
+      parameters:
+      - description: Forgot Password Request
+        in: body
+        name: forgotPasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ForgotPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      summary: Forgot password
+      tags:
+      - users
+  /users/reset_password:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using OTP code
+      parameters:
+      - description: Reset Password Request
+        in: body
+        name: resetPasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ResetPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.APIMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      summary: Reset user password
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

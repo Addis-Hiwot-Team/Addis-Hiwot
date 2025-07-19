@@ -3,27 +3,48 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-
+	"addis-hiwot/docs"
 	"addis-hiwot/internal/config"
 	"addis-hiwot/internal/delivery/http"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title           Addis Hiwot API
+// @version         1.0
+// @description     This is api documentaion for AddisHiwot API.
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
+// @externalDocs.description  OpenAPI
 func main() {
 	err := godotenv.Load()
 	log.Println("go env", err)
 	if err != nil {
 		log.Println("No .env file found")
 	}
-
+	docs.SwaggerInfo.BasePath = "/api/v1"
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Config error:", err)
 	}
 
 	router := gin.Default()
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	http.SetupRoutes(router, cfg)
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"*"},
+		ExposeHeaders: []string{"Content-Length"},
+	}))
 
 	port := cfg.ServerPort
 	if port == "" {

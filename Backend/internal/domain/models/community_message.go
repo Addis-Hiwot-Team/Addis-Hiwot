@@ -6,10 +6,10 @@ type CommunityMessage struct {
 	ID          int    `gorm:"primaryKey"`
 	UserID      int    `gorm:"not null"`
 	Content     string `gorm:"type:text"`
-	IsAnonymous bool
+	IsAnonymous bool   `gorm:"default:false"`
 	PostedAt    time.Time
-	IsEdited    bool
-	IsFlagged   bool
+	IsEdited    bool `gorm:"default:false"`
+	IsFlagged   bool `gorm:"default:false"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
