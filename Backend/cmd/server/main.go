@@ -36,15 +36,14 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		MaxAge:       12 * 3600, // Cache preflight response for 12 hours
+	}))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	http.SetupRoutes(router, cfg)
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"*"},
-		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:  []string{"*"},
-		ExposeHeaders: []string{"Content-Length"},
-	}))
 
 	port := cfg.ServerPort
 	if port == "" {
