@@ -27,14 +27,14 @@ definitions:
     type: object
   handlers.LoginReq:
     properties:
-      identifier:
+      email:
         minLength: 3
         type: string
       password:
         minLength: 3
         type: string
     required:
-    - identifier
+    - email
     - password
     type: object
   handlers.OAuthCodereq:
@@ -109,7 +109,6 @@ definitions:
         type: string
       name:
         maxLength: 255
-        minLength: 2
         type: string
       password:
         minLength: 6
@@ -203,6 +202,31 @@ paths:
       summary: logout request hanlder
       tags:
       - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the currently authenticated user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get current user info
+      tags:
+      - auth
   /auth/oauth:
     post:
       description: logs in user using OAuth provider
@@ -273,6 +297,41 @@ paths:
       summary: register request hanlder
       tags:
       - auth
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user details by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schema.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
   /users/change_password:
     post:
       consumes:

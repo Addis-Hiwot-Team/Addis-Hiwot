@@ -3,6 +3,7 @@ package handlers
 import (
 	"addis-hiwot/internal/domain/schema"
 	"addis-hiwot/internal/usecases"
+	"addis-hiwot/utils"
 	"net/http"
 	"strings"
 
@@ -15,6 +16,18 @@ type AuthHandler struct {
 
 func NewAuthHander(auc usecases.AuthUsecase) *AuthHandler {
 	return &AuthHandler{auc}
+}
+
+func (ah *AuthHandler) GetMe(ctx *gin.Context) {
+	authClaim := ctx.MustGet("claim").(*schema.AuthClaim)
+
+	user, err := ah.auc.GetMe(int(authClaim.UserID))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
 }
 
 // @Summary      register request hanlder
@@ -47,8 +60,8 @@ type ErrorResponse struct {
 }
 
 type LoginReq struct {
-	Identifier string `json:"identifier" binding:"required,min=3"`
-	Password   string `json:"password" binding:"required,min=3"`
+	Email    string `json:"email" binding:"required,min=3"`
+	Password string `json:"password" binding:"required,min=3"`
 }
 
 // @Summary      login request hanlder
@@ -62,9 +75,10 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 	var req LoginReq
 
 	if err := ctx.BindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
+		ctx.JSON(400, gin.H{"error": utils.ValidationErrorToText(err, req)})
+		return
 	}
-	tokens, err := ah.auc.Login(req.Identifier, req.Password)
+	tokens, err := ah.auc.Login(req.Email, req.Password)
 	if err != nil {
 		ctx.JSON(401, gin.H{"error": err.Error()})
 		return
