@@ -20,39 +20,45 @@ func NewUserHandler(uc interfaces.UserUsecaseInterface) *UserHandler {
 	return &UserHandler{uc: uc}
 }
 
-func (h *UserHandler) CreateUser(c *gin.Context) {
-	var userCreateSchema schema.CreateUser
-	if err := c.ShouldBindJSON(&userCreateSchema); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// @Summary      Get user by ID
+// @Description  Get user details by ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true "User ID"
+// @Success      200  {object}  models.UserResponse
+// @Failure      400  {object}  schema.APIError
+// @Failure      404  {object}  schema.APIError
+// @Failure      500  {object}  schema.APIError
+// @Security     BearerAuth
+// @Router       /users/{id} [get]
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	id := c.Param("id")
+	type GetUserByIDReq struct {
+		ID int `uri:"id" binding:"required"`
+	}
+	var req GetUserByIDReq
+	if err := c.ShouldBindUri(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is not integer"})
+		return
+	}
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
 		return
 	}
 
-	token, err := h.uc.Register(&userCreateSchema)
+	user, err := h.uc.GetByID(req.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message":      "User registered successfully",
-		"access_token": token,
-	})
-}
-
-func (h *UserHandler) LoginUser(c *gin.Context) {
-	var loginSchema schema.LoginUser
-	if err := c.ShouldBindJSON(&loginSchema); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
-	token, err := h.uc.Login(&loginSchema)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "user logged in successfully", "access_token": token})
+	c.JSON(http.StatusOK, user)
 }
 
 func (h *UserHandler) GetUsers(c *gin.Context) {

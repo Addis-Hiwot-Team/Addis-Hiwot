@@ -16,6 +16,7 @@ import (
 )
 
 type AuthUsecase interface {
+	GetMe(userID int) (*models.UserResponse, error)
 	Login(identifier, password string) (*schema.AuthResponse, error)
 	Logout(accessToken, refreshToken string) error
 	Register(req schema.CreateUser) (*schema.AuthResponse, error)
@@ -40,6 +41,25 @@ func NewAuthUsecase(
 	es service.EmailService,
 ) *authUsecase {
 	return &authUsecase{ar: ar, sr: sr, oa: service.NewOAuthService(), otpRepo: or, emailSrvs: es, userRepo: ur}
+}
+
+// @Summary      Get current user info
+// @Description  Get the currently authenticated user's information
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.UserResponse
+// @Failure      401  {object}  schema.APIError
+// @Failure      500  {object}  schema.APIError
+// @Security     BearerAuth
+// @Router       /auth/me [get]
+func (au *authUsecase) GetMe(userID int) (*models.UserResponse, error) {
+	user, err := au.userRepo.Get(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user.ToResponse(), nil
+
 }
 
 func (au *authUsecase) Register(req schema.CreateUser) (*schema.AuthResponse, error) {
@@ -205,7 +225,7 @@ func (au *authUsecase) OAuthLoginWithCode(provider, code, redirectURI string) (*
 func (au *authUsecase) generateTokens(user *models.User, refresh bool) (*schema.AuthTokenPair, error) {
 	tokens := &schema.AuthTokenPair{}
 	// Access token (short-lived)
-	accessExp := time.Now().Add(15 * time.Minute)
+	accessExp := time.Now().Add(15 * time.Hour)
 	accessClaims := &schema.AuthClaim{
 		UserID: uint(user.ID),
 		Role:   user.Role,
