@@ -35,11 +35,12 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 
 	{
 		api.GET("/users", userHandler.GetUsers)
+		api.GET("/users/:id", userHandler.GetUserByID)
 
 		//password related
-		api.POST("users/change_password", middleware.AuthMiddleware(), userHandler.ChangePassword)
-		api.POST("users/forgot_password", userHandler.ForgotPassword)
-		api.POST("users/reset_password", userHandler.ResetPassword)
+		api.POST("/users/change_password", middleware.AuthMiddleware(), userHandler.ChangePassword)
+		api.POST("/users/forgot_password", userHandler.ForgotPassword)
+		api.POST("/users/reset_password", userHandler.ResetPassword)
 	}
 
 	auth := api.Group("/auth")
@@ -47,6 +48,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	authUC := usecases.NewAuthUsecase(authRepo, sessionRepo, otpRepo, userRepo, emailServ)
 	authHandler := handlers.NewAuthHander(authUC)
 	{
+		auth.GET("/me", middleware.AuthMiddleware(), authHandler.GetMe)
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/logout", middleware.AuthMiddleware(), authHandler.Logout)
